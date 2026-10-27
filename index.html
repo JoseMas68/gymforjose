@@ -1,0 +1,351 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101019">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Gym for José</title>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.6.0/build/index.umd.js"></script>
+<script src="plan_data.js"></script>
+<style>
+:root{
+  --bg:#f4f5f9; --card:#fff; --tinta:#14151d; --tenue:#8a8fa3;
+  --acento:#f4581c; --acento-osc:#d94610; --acento-suave:#feeee6; --ok:#10b981;
+  --borde:#e9eaf2; --r:18px; --sombra:0 1px 2px rgba(20,21,29,.06),0 4px 16px rgba(20,21,29,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:480px;min-height:100dvh;background:var(--bg);color:var(--tinta);
+  font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  letter-spacing:-.01em;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.appbar{padding:calc(14px + env(safe-area-inset-top)) 20px 6px}
+.appbar .saludo{font-size:13px;font-weight:600;color:var(--tenue);text-transform:uppercase;letter-spacing:.06em;margin:0}
+.appbar h1{font-size:30px;font-weight:800;margin:2px 0 0;letter-spacing:-.03em}
+.appbar h1 .fecha{font-weight:500;color:var(--tenue);font-size:17px}
+.tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;z-index:50;padding-bottom:env(safe-area-inset-bottom);pointer-events:none}
+.tabbar .caja{pointer-events:auto;display:flex;gap:6px;background:rgba(255,255,255,.88);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);
+  border:1px solid var(--borde);border-radius:24px;padding:6px;margin:0 16px 12px;
+  box-shadow:0 6px 24px rgba(20,21,29,.14);width:min(448px,100%)}
+.tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 7px;
+  border-radius:18px;text-decoration:none;color:var(--tenue);font-size:11px;font-weight:700;transition:background .15s,color .15s}
+.tabbar a svg{width:22px;height:22px}
+.tabbar a.activo{background:var(--acento);color:#fff}
+main{padding:8px 16px}
+.tarjeta{background:var(--card);border-radius:var(--r);padding:18px;margin:12px 0;box-shadow:var(--sombra)}
+.tarjeta h2{font-size:13px;font-weight:700;color:var(--tenue);text-transform:uppercase;letter-spacing:.07em;margin:0 0 12px;display:flex;align-items:center;gap:7px}
+.tarjeta h2 svg{width:16px;height:16px;color:var(--acento)}
+input,textarea,select{width:100%;padding:12px 14px;margin:0;border:1.5px solid var(--borde);border-radius:13px;
+  font-size:16px;font-weight:500;background:#fafafe;color:var(--tinta);transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:var(--acento);box-shadow:0 0 0 4px var(--acento-suave)}
+textarea{resize:none;line-height:1.45}
+label{display:block;font-size:13px;font-weight:600;color:var(--tenue);margin:12px 0 5px}
+.peso-hero{display:flex;align-items:baseline;gap:8px;border:1.5px solid var(--borde);border-radius:16px;
+  padding:10px 18px;background:#fafafe;transition:border-color .15s,box-shadow .15s}
+.peso-hero:focus-within{border-color:var(--acento);box-shadow:0 0 0 4px var(--acento-suave)}
+.peso-hero input{border:0;background:none;padding:0;font-size:44px;font-weight:800;letter-spacing:-.03em}
+.peso-hero input:focus{box-shadow:none}
+.peso-hero .u{font-size:20px;font-weight:700;color:var(--tenue)}
+.segmented{display:flex;background:#eceef5;border-radius:13px;padding:4px;gap:4px}
+.segmented label{flex:1;margin:0}
+.segmented input{display:none}
+.segmented span{display:block;text-align:center;padding:10px 4px;border-radius:10px;font-weight:700;font-size:14px;color:var(--tenue);cursor:pointer;transition:all .18s}
+.segmented input:checked+span{background:#fff;color:var(--acento);box-shadow:0 1px 4px rgba(20,21,29,.12)}
+.ej{border:1px solid var(--borde);border-radius:15px;padding:14px 15px;margin:10px 0;background:#fff}
+.ej .cab{display:flex;gap:11px;align-items:flex-start}
+.ej .num{flex:0 0 28px;height:28px;border-radius:9px;background:var(--acento-suave);color:var(--acento);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.ej b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+.stats{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 2px}
+.stats i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--tenue);background:#f2f3f8;border-radius:7px;padding:3px 8px}
+.stats i b{font-size:11.5px;color:var(--tinta)}
+.logs{display:flex;gap:10px;margin-top:11px}
+.logs>div{flex:1}
+.logs label{margin:0 0 4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.logs input{padding:10px 12px;font-size:16px;font-weight:700;text-align:center}
+.boton{display:block;width:100%;border:0;border-radius:15px;padding:16px;font-size:16.5px;font-weight:800;
+  color:#fff;background:linear-gradient(180deg,var(--acento),var(--acento-osc));box-shadow:0 5px 14px rgba(244,88,28,.35);
+  cursor:pointer;transition:transform .12s,filter .15s;margin:16px 0 0;font-family:inherit}
+.boton:active{transform:scale(.98);filter:brightness(.94)}
+.boton.verde{background:linear-gradient(180deg,#10b981,#059669);box-shadow:0 5px 14px rgba(16,185,129,.32)}
+.strip{display:flex;gap:7px}
+.strip .dia{flex:1;background:#fff;border:1px solid var(--borde);border-radius:13px;padding:9px 2px;text-align:center;box-shadow:var(--sombra)}
+.strip .dia .l{font-size:10.5px;font-weight:800;color:var(--tenue);text-transform:uppercase}
+.strip .dia .v{font-size:15px;font-weight:800;margin-top:2px}
+.strip .dia .e{font-size:9.5px;font-weight:800;color:var(--acento)}
+.wsel{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px}
+.wsel a{flex:0 0 40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:13px;
+  background:#fff;border:1px solid var(--borde);color:var(--tenue);font-weight:800;font-size:14px;text-decoration:none;box-shadow:var(--sombra)}
+.wsel a.activo{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.mini{font-size:13px;color:var(--tenue)}
+details.ficha{margin-top:10px;border-top:1px solid var(--borde);padding-top:8px}
+details.ficha summary{font-size:13px;font-weight:700;color:var(--acento);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px}
+details.ficha summary::before{content:"▸";transition:transform .2s;font-size:11px}
+details.ficha[open] summary::before{transform:rotate(90deg)}
+details.ficha img{width:110px;height:110px;border-radius:12px;background:#f4f5f9;float:left;margin:8px 12px 4px 0}
+details.ficha .musculos{margin:10px 0 4px;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--tenue)}
+details.ficha .como{margin:0;font-size:13.5px;line-height:1.55;color:#3d4050}
+ul.sin{margin:6px 0;padding:0;list-style:none}
+ul.sin li{border:1px solid var(--borde);border-radius:12px;padding:11px 14px;margin:7px 0;font-size:14px;font-weight:600;display:flex;justify-content:space-between}
+.boton-wa{display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(180deg,#22c55e,#16a34a);
+  color:#fff;border-radius:15px;padding:16px;text-decoration:none;font-weight:800;font-size:16.5px;box-shadow:0 5px 14px rgba(34,197,94,.32);margin-top:14px}
+pre{white-space:pre-wrap;background:#f6f7fb;padding:14px 16px;border-radius:13px;font-size:13.5px;font-family:inherit;line-height:1.5;margin:0}
+.check{width:56px;height:56px;border-radius:50%;background:#ecfdf5;display:flex;align-items:center;justify-content:center;margin:4px auto 10px}
+.center{text-align:center}
+.oculto{display:none}
+</style></head><body>
+<div class="appbar"><p class="saludo" id="saludo">Hola José 💪</p><h1 id="titulo"></h1></div>
+<main id="vista"></main>
+<nav class="tabbar"><div class="caja">
+  <a href="#" id="tab-hoy" onclick="ver('hoy');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Hoy</a>
+  <a href="#" id="tab-semana" onclick="ver('semana');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>Semana</a>
+</div></nav>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+/* ---------- estado ---------- */
+const CLAVE = "gymdatos";
+let D = null;
+function cargar(){
+  if (D) return D;
+  const guardado = localStorage.getItem(CLAVE);
+  D = guardado ? JSON.parse(guardado) : JSON.parse(JSON.stringify(window.DATOS_INICIALES || {}));
+  if (!D.inicio) D.inicio = hoyISO();
+  D.diario ||= {}; D.medidas ||= {}; D.cuestionarios ||= {}; D.telefono ||= "";
+  return D;
+}
+function guardarEstado(){ localStorage.setItem(CLAVE, JSON.stringify(D)); }
+const hoyISO = () => new Date().toLocaleDateString("sv").slice(0,10);
+function lunesDe(fecha){
+  const d = new Date(fecha + "T12:00:00");
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.toISOString().slice(0,10);
+}
+function numSemanaHoy(){
+  const ini = new Date(D.inicio + "T12:00:00"), hoy = new Date(hoyISO() + "T12:00:00");
+  return Math.max(1, Math.floor((hoy - ini) / 6048e5) + 1);
+}
+function fechasDeSemana(num){
+  const l = new Date(lunesDe(D.inicio) + "T12:00:00"); l.setDate(l.getDate() + (num - 1) * 7);
+  return [...Array(7)].map((_, i) => { const f = new Date(l); f.setDate(l.getDate() + i); return f.toISOString().slice(0,10); });
+}
+const DIAS = ["L","M","X","J","V","S","D"];
+
+/* ---------- navegación ---------- */
+function ver(v){
+  $("#tab-hoy").classList.toggle("activo", v === "hoy");
+  $("#tab-semana").classList.toggle("activo", v === "semana");
+  if (v === "hoy") pintaHoy(); else pintaSemana(numSemanaHoy());
+  window.scrollTo(0, 0);
+}
+
+/* ---------- HOY ---------- */
+function pintaHoy(){
+  cargar();
+  const hoy = hoyISO(), dia = D.diario[hoy] || {};
+  const semana = fechasDeSemana(numSemanaHoy());
+  $("#titulo").innerHTML = `Hoy <span class="fecha">· ${hoy.slice(8)}/${hoy.slice(5,7)}</span>`;
+  let html = `<form id="f-hoy" onsubmit="return guardarHoy(event)">
+  <div class="tarjeta"><h2>Peso</h2>
+    <div class="peso-hero"><input name="peso" value="${dia.peso ?? ""}" inputmode="decimal" placeholder="80.5" autocomplete="off"><span class="u">kg</span></div></div>
+  <div class="tarjeta"><h2>Entrenamiento</h2><div class="segmented">`;
+  const elegido = dia.dia_plan || Object.keys(PLAN)[0];
+  for (const clave of Object.keys(PLAN))
+    html += `<label><input type="radio" name="dia_plan" value="${clave}" ${elegido === clave ? "checked" : ""} onchange="muestraDia('${clave}')"><span>${clave}</span></label>`;
+  html += `</div>`;
+  for (const [clave, dd] of Object.entries(PLAN)){
+    html += `<div id="seccion-${clave}" class="oculto"><p class="mini" style="margin:12px 0 0"><b>${dd.titulo}</b></p>`;
+    dd.ejercicios.forEach((ej, i) => {
+      const reg = (dia.entreno || {})[ej.nombre] || {}, f = FICHAS[ej.nombre];
+      html += `<div class="ej"><div class="cab"><span class="num">${i + 1}</span><div><b>${ej.nombre}</b><div class="stats">` +
+        `<i><b>${ej.series}</b> series</i><i><b>${ej.reps}</b> reps</i>` +
+        (ej.descanso ? `<i>⏱ <b>${ej.descanso}</b></i>` : "") + (ej.rir ? `<i>RIR <b>${ej.rir}</b></i>` : "") +
+        `</div></div></div>` +
+        (f ? `<details class="ficha"><summary>¿Cómo se hace?</summary><img src="${f.gif}" alt="" loading="lazy"><div><p class="musculos">${f.musculo}${f.secundarios ? " · " + f.secundarios : ""}</p><p class="como">${f.como}</p></div></details>` : "") +
+        `<div class="logs"><div><label>Peso kg</label><input name="ej__${ej.nombre}__peso" inputmode="decimal" value="${reg.peso ?? ""}" placeholder="60" autocomplete="off"></div>` +
+        `<div><label>Reps hechas</label><input name="ej__${ej.nombre}__series" value="${reg.series ?? ""}" placeholder="10, 9, 8, 8" autocomplete="off"></div></div></div>`;
+    });
+    html += `</div>`;
+  }
+  html += `<button class="boton">Guardar entrenamiento</button></div></form>
+  <div class="tarjeta"><h2>Tu semana</h2><div class="strip">`;
+  semana.forEach((f, i) => {
+    const dd = D.diario[f] || {};
+    html += `<div class="dia"><div class="l">${DIAS[i]}</div><div class="v">${dd.peso ?? "·"}</div><div class="e" style="${dd.dia_plan ? "" : "color:transparent"}">${dd.dia_plan || "·"}</div></div>`;
+  });
+  $("#vista").innerHTML = html + `</div></div>`;
+  muestraDia(elegido);
+}
+function muestraDia(clave){
+  document.querySelectorAll("[id^=seccion-]").forEach(s => s.classList.add("oculto"));
+  document.getElementById("seccion-" + clave).classList.remove("oculto");
+}
+function guardarHoy(ev){
+  ev.preventDefault();
+  const fd = new FormData(ev.target), hoy = hoyISO();
+  const dia = D.diario[hoy] ||= {};
+  if (fd.get("peso")) dia.peso = parseFloat(fd.get("peso").replace(",", "."));
+  dia.dia_plan = fd.get("dia_plan");
+  dia.entreno = {};
+  for (const [k, v] of fd.entries())
+    if (k.startsWith("ej__") && k.endsWith("__peso") && v.trim()){
+      const nombre = k.slice(4, -6);
+      dia.entreno[nombre] = { peso: v.trim(), series: (fd.get(`ej__${nombre}__series`) || "").trim() };
+    }
+  guardarEstado(); pintaHoy();
+  aviso("Día guardado ✓");
+  return false;
+}
+function aviso(txt){
+  const t = document.createElement("div");
+  t.textContent = txt;
+  t.style.cssText = "position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#14151d;color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:700;z-index:99;box-shadow:0 6px 20px rgba(0,0,0,.25)";
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+}
+
+/* ---------- SEMANA ---------- */
+let SEMANA = 1;
+function pintaSemana(num){
+  cargar();
+  SEMANA = num;
+  $("#titulo").textContent = "Semana " + num;
+  const med = D.medidas[num] || {}, cq = D.cuestionarios[num] || {};
+  const P = [
+    ["gluteo","Glúteo"],["ombligo","Ombligo"],["torso","Torso"],["piernas","Piernas"],["biceps","Bíceps"],["peso","Peso (kg)"]];
+  let html = `<div class="wsel">`;
+  for (let n = 1; n <= 12; n++)
+    html += `<a href="#" onclick="pintaSemana(${n});return false" class="${n === num ? "activo" : ""}">${n}</a>`;
+  html += `</div><form id="f-semana" onsubmit="return guardarSemana(event)">
+  <div class="tarjeta"><h2>Medidas</h2>`;
+  for (const [k, et] of P) html += `<label>${et}</label><input name="${k}" value="${med[k] ?? ""}" inputmode="decimal" autocomplete="off">`;
+  html += `</div><div class="tarjeta"><h2>Cuestionario</h2>`;
+  for (const [k, q] of Object.entries(QUESTIONARIO))
+    html += `<label>${q}</label>` + (["sentimientos","sueno","sugerencias"].includes(k)
+      ? `<textarea name="q_${k}" rows="2">${cq[k] ?? ""}</textarea>`
+      : `<input name="q_${k}" value="${cq[k] ?? ""}" autocomplete="off">`);
+  html += `</div><div class="tarjeta"><h2>Envío</h2>
+  <label>Teléfono del entrenador</label><input name="telefono" value="${D.telefono}" inputmode="tel" placeholder="34 600 123 456">
+  <button class="boton">Guardar semana</button></div></form>
+  <button class="boton verde" onclick="return generarInforme()">📄 Generar informe de la semana ${num}</button>
+  <div class="tarjeta"><h2>Copia de seguridad</h2>
+  <p class="mini">Los datos viven en este navegador. Exporta de vez en cuando.</p>
+  <button class="boton" style="margin-top:10px" onclick="return exportarJSON()">⬇️ Exportar datos</button>
+  <label style="margin-top:10px">Importar copia</label><input type="file" accept=".json" onchange="importarJSON(this)">`;
+  $("#vista").innerHTML = html + `</div>`;
+  return false;
+}
+function guardarSemana(ev){
+  ev.preventDefault();
+  const fd = new FormData(ev.target), num = SEMANA;
+  const med = {};
+  for (const k of ["gluteo","ombligo","torso","piernas","biceps","peso"])
+    if (fd.get(k)) med[k] = parseFloat(fd.get(k).replace(",", "."));
+  D.medidas[num] = med;
+  const cq = {};
+  for (const k of Object.keys(QUESTIONARIO)) if (fd.get("q_" + k)) cq[k] = fd.get("q_" + k);
+  D.cuestionarios[num] = cq;
+  D.telefono = (fd.get("telefono") || "").trim();
+  guardarEstado(); aviso("Semana guardada ✓");
+  return false;
+}
+function exportarJSON(){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(D, null, 2)], { type: "application/json" }));
+  a.download = "gym-copia-" + hoyISO() + ".json"; a.click();
+  return false;
+}
+function importarJSON(input){
+  const f = input.files[0]; if (!f) return;
+  f.text().then(t => {
+    D = JSON.parse(t); guardarEstado(); cargar(); pintaSemana(SEMANA); aviso("Copia importada ✓");
+  });
+}
+
+/* ---------- GENERACIÓN DE INFORMES ---------- */
+const QUESTIONARIO = {
+  sentimientos: "1 · ¿Cómo te has sentido esta semana?", hambre: "2 · Nivel de hambre (1-5)",
+  saciedad: "3 · Nivel de saciedad (1-5)", dieta: "4 · Seguimiento de la dieta (1-5)",
+  entrenamiento_plan: "5 · Seguimiento del plan de entrenamiento (1-5)", sueno: "6 · Horas y calidad del sueño",
+  pasos_cardio: "7 · ¿Has cumplido los pasos/cardio todos los días?", motivacion: "8 · Nivel de motivación (1-5)",
+  sugerencias: "9 · Cuéntame si te habría gustado que algo hubiera sido diferente"
+};
+const ETIQUETAS_MEDIDAS = ["gluteo","ombligo","torso","piernas","biceps","peso"];
+async function generarInforme(){
+  aviso("Generando documentos…");
+  const num = SEMANA, fechas = fechasDeSemana(num);
+  const textosEntreno = {};
+  for (const f of fechas) Object.assign(textosEntreno, D.diario[f]?.entreno || {});
+  // 1) control de peso
+  let wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(await (await fetch("plantillas/control.xlsx")).arrayBuffer());
+  let ws = wb.worksheets[0], fila = 5 + num;
+  ws.getRow(fila).getCell(1).value = `Semana ${num}`;
+  fechas.forEach((f, i) => { if (D.diario[f]?.peso) ws.getRow(fila).getCell(2 + i).value = D.diario[f].peso; });
+  descargar(await wb.xlsx.writeBuffer(), `semana_${num}_control_peso.xlsx`);
+  // 2) medidas
+  const med = D.medidas[num] || {};
+  if (Object.keys(med).length){
+    wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(await (await fetch("plantillas/medidas.xlsx")).arrayBuffer());
+    ws = wb.worksheets[0]; const col = 4 + num;
+    ETIQUETAS_MEDIDAS.forEach((k, i) => { if (med[k]) ws.getRow(6 + i).getCell(col).value = med[k]; });
+    descargar(await wb.xlsx.writeBuffer(), `semana_${num}_medidas.xlsx`);
+  }
+  // 3) entrenamiento
+  if (Object.keys(textosEntreno).length){
+    wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(await (await fetch("plantillas/entrenamiento.xlsx")).arrayBuffer());
+    ws = wb.worksheets[0];
+    for (const dd of Object.values(PLAN))
+      for (const ej of dd.ejercicios){
+        const v = textosEntreno[ej.nombre]; if (!v) continue;
+        let t = v.peso || "";
+        if (v.series) t = t ? `${t} (${v.series} reps)` : `${v.series} reps`;
+        ws.getRow(ej.fila).getCell(6).value = t;
+      }
+    descargar(await wb.xlsx.writeBuffer(), `semana_${num}_entrenamiento.xlsx`);
+  }
+  // 4) cuestionario docx
+  const cq = D.cuestionarios[num] || {};
+  if (Object.keys(cq).length){
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+    const hijos = [new Paragraph({ text: "Cuestionario de Seguimiento Semanal", heading: HeadingLevel.HEADING_1 }),
+      new Paragraph({ children: [new TextRun({ text: "Respuestas de la semana " + num + " (del " + fechas[0] + " al " + fechas[6] + ")", italics: true })] })];
+    Object.entries(QUESTIONARIO).forEach(([k, q], i) => {
+      hijos.push(new Paragraph({ text: (i === 0 ? "" : "\n") + q, spacing: { before: 240 } }));
+      hijos.push(new Paragraph({ children: [new TextRun({ text: "Respuesta: " + (cq[k] || "-"), bold: true })] }));
+    });
+    descargar(await Packer.toBlob(new Document({ sections: [{ children: hijos }] })), `semana_${num}_cuestionario.docx`);
+  }
+  // resumen WhatsApp
+  const lineas = [`📋 Informe Semana ${num} (del ${fechas[0]} al ${fechas[6]})`];
+  const pesos = fechas.map(f => D.diario[f]?.peso).filter(Boolean);
+  if (pesos.length) lineas.push(`⚖️ Peso: media ${(pesos.reduce((a, b) => a + b) / pesos.length).toFixed(1)} kg (${Math.min(...pesos)}–${Math.max(...pesos)})`);
+  const dias = fechas.map(f => D.diario[f]?.dia_plan).filter(Boolean);
+  if (dias.length) lineas.push("🏋️ Entrenos: " + dias.join(", "));
+  if (Object.keys(med).length) lineas.push("📏 Medidas registradas");
+  if (Object.keys(cq).length) lineas.push(`📝 Cuestionario cumplimentado (${Object.keys(cq).length}/9)`);
+  const texto = lineas.join("\n");
+  const accion = D.telefono ? `https://wa.me/${D.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}` : null;
+  pintaGenerado(num, texto, accion);
+  return false;
+}
+function pintaGenerado(num, texto, accion){
+  $("#titulo").textContent = "Semana " + num;
+  $("#vista").innerHTML = `
+  <div class="tarjeta center"><div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+  <b style="font-size:19px">Informe generado</b><p class="mini" style="margin:6px 0 2px">Los 4 documentos se han descargado. Adjúntalos en el chat.</p></div>
+  <div class="tarjeta"><h2>Resumen</h2><pre>${texto}</pre>
+  ${accion ? `<a class="boton-wa" target="_blank" href="${accion}">Enviar por WhatsApp</a>` : `<p class="mini">Guarda el teléfono del entrenador en la pestaña Semana para el enlace directo.</p>`}</div>
+  <a class="boton" href="#" onclick="pintaSemana(${num});return false" style="text-align:center;text-decoration:none">← Volver</a>`;
+}
+function descargar(buf, nombre){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([buf], { type: "application/octet-stream" }));
+  a.download = nombre; a.click();
+}
+/* ---------- arranque ---------- */
+document.addEventListener("DOMContentLoaded", () => { cargar(); ver("hoy"); });
+</script>
+</body></html>
